@@ -54,6 +54,29 @@ public class Chai {
                     }
                 }
                 System.out.println(output);
+            } else if (command.equals("unmark") || command.startsWith("unmark ")) {
+                String[] parts = command.split("\\s+");
+                String output;
+
+                if (parts.length != 2) {
+                    output = "Please use the format: unmark <task number>";
+                } else {
+                    try {
+                        int taskNumber = Integer.parseInt(parts[1]);
+
+                        if (taskNumber < 1 || taskNumber > taskCount) {
+                            output = "That task number does not exist. Please choose a number from 1 to "
+                                    + taskCount + ".";
+                        } else {
+                            tasksCompleted[taskNumber - 1] = false;
+                            output = "Marked task " + taskNumber + " as not done:\n  "
+                                    + taskDescription.apply(taskNumber - 1);
+                        }
+                    } catch (NumberFormatException e) {
+                        output = "The task number must be a whole number.";
+                    }
+                }
+                System.out.println(output);
             } else {
                 if (taskCount < tasks.length) {
                     tasks[taskCount++] = command;
