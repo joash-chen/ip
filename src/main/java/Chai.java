@@ -1,5 +1,4 @@
 import java.util.Scanner;
-import java.util.function.IntFunction;
 
 public class Chai {
     public static void main(String[] args) {
@@ -8,16 +7,14 @@ public class Chai {
                         "▒▓█    ▄ ▒██▀▀██░▒██  ▀█▄  ▒██░\n" +
                         "▒▓▓▄ ▄██▒░▓█ ░██ ░██▄▄▄▄██ ▒██░\n" +
                         "▒ ▓███▀ ░░▓█▒░██▓ ▓█   ▓██▒░██░\n" +
-                        "░ ░▒ ▒  ░ ▒ ░░▒░▒ ▒▒   ▓▒█░░ ▒░\n";
+                        "░ ░▒ ▒  ░ ▒ ░░▒░▒ ▒▒   ▓▒█░░ ▒░\n"; // used codex to make the ASCII art
         String separator = "____________________________________________________________";
         String introduction = separator + '\n' + banner + '\n' + "Hey I'm Chai :)\n" + "What do you need?\n" + separator;
         String goodbye = "See you soon!\n" + separator;
 
         Scanner scanner = new Scanner(System.in);
-        String[] tasks = new String[100];
-        boolean[] tasksCompleted = new boolean[100];
+        Task[] tasks = new Task[100];
         int taskCount = 0;
-        IntFunction<String> taskDescription = index -> "[" + (tasksCompleted[index] ? "X" : " ") + "] " + tasks[index];
 
         System.out.println(introduction);
         while (true) {
@@ -29,10 +26,10 @@ public class Chai {
                 break;
             } else if (command.equals("list")) {
                 for (int i = 0; i < taskCount; i++) {
-                    System.out.println((i + 1) + ". " + taskDescription.apply(i));
+                    System.out.println((i + 1) + ". " + tasks[i]);
                 }
             } else if (command.equals("mark") || command.startsWith("mark ")) {
-                String[] parts = command.split("\\s+");
+                String[] parts = command.split("\\s+"); // used gemini for regex
                 String output;
 
                 if (parts.length != 2) {
@@ -44,10 +41,10 @@ public class Chai {
                         if (taskNumber < 1 || taskNumber > taskCount) {
                             output = "That task number does not exist. Please choose a number from 1 to "
                                     + taskCount + ".";
-                        } else { // command && task are valid
-                            tasksCompleted[taskNumber - 1] = true;
+                        } else {
+                            tasks[taskNumber - 1].markAsDone();
                             output = "Marked task " + taskNumber + " as done:\n  " +
-                                    taskDescription.apply(taskNumber - 1);
+                                    tasks[taskNumber - 1];
                         }
                     } catch (NumberFormatException e) {
                         output = "The task number must be a whole number.";
@@ -68,9 +65,9 @@ public class Chai {
                             output = "That task number does not exist. Please choose a number from 1 to "
                                     + taskCount + ".";
                         } else {
-                            tasksCompleted[taskNumber - 1] = false;
+                            tasks[taskNumber - 1].markAsUndone();
                             output = "Marked task " + taskNumber + " as not done:\n  "
-                                    + taskDescription.apply(taskNumber - 1);
+                                    + tasks[taskNumber - 1];
                         }
                     } catch (NumberFormatException e) {
                         output = "The task number must be a whole number.";
@@ -79,7 +76,7 @@ public class Chai {
                 System.out.println(output);
             } else {
                 if (taskCount < tasks.length) {
-                    tasks[taskCount++] = command;
+                    tasks[taskCount++] = new Task(command);
 
                     System.out.println("added: " + command);
                 } else {
