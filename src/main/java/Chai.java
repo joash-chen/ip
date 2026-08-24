@@ -85,9 +85,17 @@ public class Chai {
                     System.out.println("OOPS!!! " + e.getMessage());
                 }
             } else if (command.startsWith("deadline ")) {
-                taskCount = addDeadline(tasks, taskCount, command);
+                try {
+                    taskCount = addDeadline(tasks, taskCount, command);
+                } catch (ChaiException e) {
+                    System.out.println("OOPS!!! " + e.getMessage());
+                }
             } else if (command.startsWith("event ")) {
-                taskCount = addEvent(tasks, taskCount, command);
+                try {
+                    taskCount = addEvent(tasks, taskCount, command);
+                } catch (ChaiException e) {
+                    System.out.println("OOPS!!! " + e.getMessage());
+                }
             } else {
                 try {
                     throw new ChaiException("I don't know how to handle that command. Try: todo <description>");
@@ -117,39 +125,35 @@ public class Chai {
     }
 
     /** Parses and adds a deadline command in the form {@code deadline <description> /by <time>}. */
-    private static int addDeadline(Task[] tasks, int taskCount, String command) {
+    private static int addDeadline(Task[] tasks, int taskCount, String command) throws ChaiException {
         String body = command.substring("deadline ".length());
         int marker = body.indexOf(" /by ");
         if (marker < 0) {
-            System.out.println("Please use the format: deadline <description> /by <date or time>");
-            return taskCount;
+            throw new ChaiException("Use: deadline <description> /by <date or time>");
         }
 
         String description = body.substring(0, marker).trim();
         String by = body.substring(marker + " /by ".length()).trim();
         if (description.isEmpty() || by.isEmpty()) {
-            System.out.println("Please provide both a description and a deadline.");
-            return taskCount;
+            throw new ChaiException("A deadline needs both a description and a date or time.");
         }
         return addTask(tasks, taskCount, new Deadline(description, by));
     }
 
     /** Parses and adds an event command in the form {@code event <description> /from <start> /to <end>}. */
-    private static int addEvent(Task[] tasks, int taskCount, String command) {
+    private static int addEvent(Task[] tasks, int taskCount, String command) throws ChaiException {
         String body = command.substring("event ".length());
         int fromMarker = body.indexOf(" /from ");
         int toMarker = body.indexOf(" /to ", fromMarker + 1);
         if (fromMarker < 0 || toMarker < 0) {
-            System.out.println("Please use the format: event <description> /from <start> /to <end>");
-            return taskCount;
+            throw new ChaiException("Use: event <description> /from <start> /to <end>");
         }
 
         String description = body.substring(0, fromMarker).trim();
         String from = body.substring(fromMarker + " /from ".length(), toMarker).trim();
         String to = body.substring(toMarker + " /to ".length()).trim();
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            System.out.println("Please provide a description, start, and end time.");
-            return taskCount;
+            throw new ChaiException("An event needs a description, start, and end time.");
         }
         return addTask(tasks, taskCount, new Event(description, from, to));
     }
