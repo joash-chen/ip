@@ -89,7 +89,11 @@ public class Chai {
             } else if (command.startsWith("event ")) {
                 taskCount = addEvent(tasks, taskCount, command);
             } else {
-                System.out.println("I don't understand that command.");
+                try {
+                    throw new ChaiException("I don't know how to handle that command. Try: todo <description>");
+                } catch (ChaiException e) {
+                    System.out.println("OOPS!!! " + e.getMessage());
+                }
             }
 
             System.out.println(separator);
