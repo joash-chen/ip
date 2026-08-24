@@ -74,9 +74,16 @@ public class Chai {
                     }
                 }
                 System.out.println(output);
-            } else if (command.startsWith("todo ")) {
-                String description = command.substring("todo ".length()).trim();
-                taskCount = addTask(tasks, taskCount, new Todo(description));
+            } else if (command.equals("todo") || command.startsWith("todo ")) {
+                try {
+                    String description = command.substring("todo".length()).trim();
+                    if (description.isEmpty()) {
+                        throw new ChaiException("A todo needs a description. Try: todo <description>");
+                    }
+                    taskCount = addTask(tasks, taskCount, new Todo(description));
+                } catch (ChaiException e) {
+                    System.out.println("OOPS!!! " + e.getMessage());
+                }
             } else if (command.startsWith("deadline ")) {
                 taskCount = addDeadline(tasks, taskCount, command);
             } else if (command.startsWith("event ")) {
