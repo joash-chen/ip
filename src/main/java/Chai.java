@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Chai {
@@ -13,8 +14,7 @@ public class Chai {
         String goodbye = "See you soon!\n" + separator;
 
         Scanner scanner = new Scanner(System.in);
-        Task[] tasks = new Task[100];
-        int taskCount = 0;
+        ArrayList<Task> tasks = new ArrayList<>();
 
         System.out.println(introduction);
         while (true) {
@@ -25,8 +25,8 @@ public class Chai {
             if (command.equals("bye")) {
                 break;
             } else if (command.equals("list")) {
-                for (int i = 0; i < taskCount; i++) {
-                    System.out.println((i + 1) + ". " + tasks[i]);
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println((i + 1) + ". " + tasks.get(i));
                 }
             } else if (command.equals("mark") || command.startsWith("mark ")) {
                 String[] parts = command.split("\\s+"); // used gemini for regex
@@ -38,13 +38,13 @@ public class Chai {
                     try {
                         int taskNumber = Integer.parseInt(parts[1]);
 
-                        if (taskNumber < 1 || taskNumber > taskCount) {
+                        if (taskNumber < 1 || taskNumber > tasks.size()) {
                             output = "That task number does not exist. Please choose a number from 1 to "
-                                    + taskCount + ".";
+                                    + tasks.size() + ".";
                         } else {
-                            tasks[taskNumber - 1].markAsDone();
-                            output = "Marked task " + taskNumber + " as done:\n  " +
-                                    tasks[taskNumber - 1];
+                            Task task = tasks.get(taskNumber - 1);
+                            task.markAsDone();
+                            output = "Marked task " + taskNumber + " as done:\n  " + task;
                         }
                     } catch (NumberFormatException e) {
                         output = "The task number must be a whole number.";
@@ -61,13 +61,13 @@ public class Chai {
                     try {
                         int taskNumber = Integer.parseInt(parts[1]);
 
-                        if (taskNumber < 1 || taskNumber > taskCount) {
+                        if (taskNumber < 1 || taskNumber > tasks.size()) {
                             output = "That task number does not exist. Please choose a number from 1 to "
-                                    + taskCount + ".";
+                                    + tasks.size() + ".";
                         } else {
-                            tasks[taskNumber - 1].markAsUndone();
-                            output = "Marked task " + taskNumber + " as not done:\n  "
-                                    + tasks[taskNumber - 1];
+                            Task task = tasks.get(taskNumber - 1);
+                            task.markAsUndone();
+                            output = "Marked task " + taskNumber + " as not done:\n  " + task;
                         }
                     } catch (NumberFormatException e) {
                         output = "The task number must be a whole number.";
@@ -80,19 +80,19 @@ public class Chai {
                     if (description.isEmpty()) {
                         throw new ChaiException("A todo needs a description. Try: todo <description>");
                     }
-                    taskCount = addTask(tasks, taskCount, new Todo(description));
+                    addTask(tasks, new Todo(description));
                 } catch (ChaiException e) {
                     System.out.println("OOPS!!! " + e.getMessage());
                 }
             } else if (command.startsWith("deadline ")) {
                 try {
-                    taskCount = addDeadline(tasks, taskCount, command);
+                    addDeadline(tasks, command);
                 } catch (ChaiException e) {
                     System.out.println("OOPS!!! " + e.getMessage());
                 }
             } else if (command.startsWith("event ")) {
                 try {
-                    taskCount = addEvent(tasks, taskCount, command);
+                    addEvent(tasks, command);
                 } catch (ChaiException e) {
                     System.out.println("OOPS!!! " + e.getMessage());
                 }
@@ -111,21 +111,14 @@ public class Chai {
     }
 
     /** Adds a task and prints the standard confirmation message. */
-    private static int addTask(Task[] tasks, int taskCount, Task task) {
-        if (taskCount >= tasks.length) {
-            System.out.println("The task list is full");
-            return taskCount;
-        }
-
-        tasks[taskCount] = task;
-        taskCount++;
+    private static void addTask(ArrayList<Task> tasks, Task task) {
+        tasks.add(task);
         System.out.println("Got it. I've added this task:\n  " + task);
-        System.out.println("Now you have " + taskCount + " tasks in the list.");
-        return taskCount;
+        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
     }
 
     /** Parses and adds a deadline command in the form {@code deadline <description> /by <time>}. */
-    private static int addDeadline(Task[] tasks, int taskCount, String command) throws ChaiException {
+    private static void addDeadline(ArrayList<Task> tasks, String command) throws ChaiException {
         String body = command.substring("deadline ".length());
         int marker = body.indexOf(" /by ");
         if (marker < 0) {
@@ -137,11 +130,11 @@ public class Chai {
         if (description.isEmpty() || by.isEmpty()) {
             throw new ChaiException("A deadline needs both a description and a date or time.");
         }
-        return addTask(tasks, taskCount, new Deadline(description, by));
+        addTask(tasks, new Deadline(description, by));
     }
 
     /** Parses and adds an event command in the form {@code event <description> /from <start> /to <end>}. */
-    private static int addEvent(Task[] tasks, int taskCount, String command) throws ChaiException {
+    private static void addEvent(ArrayList<Task> tasks, String command) throws ChaiException {
         String body = command.substring("event ".length());
         int fromMarker = body.indexOf(" /from ");
         int toMarker = body.indexOf(" /to ", fromMarker + 1);
@@ -155,6 +148,6 @@ public class Chai {
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
             throw new ChaiException("An event needs a description, start, and end time.");
         }
-        return addTask(tasks, taskCount, new Event(description, from, to));
+        addTask(tasks, new Event(description, from, to));
     }
 }
