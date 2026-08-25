@@ -17,18 +17,25 @@ public class Chai {
         ArrayList<Task> tasks = new ArrayList<>();
 
         System.out.println(introduction);
-        while (true) {
+        boolean isRunning = true;
+        while (isRunning) {
             String command = scanner.nextLine();
 
             System.out.println(separator);
 
-            if (command.equals("bye")) {
+            String keyword = command.split("\\s+", 2)[0];
+            CommandType commandType = CommandType.fromKeyword(keyword);
+
+            switch (commandType) {
+            case BYE:
+                isRunning = false;
                 break;
-            } else if (command.equals("list")) {
+            case LIST:
                 for (int i = 0; i < tasks.size(); i++) {
                     System.out.println((i + 1) + ". " + tasks.get(i));
                 }
-            } else if (command.equals("mark") || command.startsWith("mark ")) {
+                break;
+            case MARK: {
                 String[] parts = command.split("\\s+"); // used gemini for regex
                 String output;
 
@@ -51,7 +58,9 @@ public class Chai {
                     }
                 }
                 System.out.println(output);
-            } else if (command.equals("unmark") || command.startsWith("unmark ")) {
+                break;
+            }
+            case UNMARK: {
                 String[] parts = command.split("\\s+");
                 String output;
 
@@ -74,7 +83,9 @@ public class Chai {
                     }
                 }
                 System.out.println(output);
-            } else if (command.equals("todo") || command.startsWith("todo ")) {
+                break;
+            }
+            case TODO:
                 try {
                     String description = command.substring("todo".length()).trim();
                     if (description.isEmpty()) {
@@ -84,33 +95,47 @@ public class Chai {
                 } catch (ChaiException e) {
                     System.out.println("OOPS!!! " + e.getMessage());
                 }
-            } else if (command.startsWith("deadline ")) {
+                break;
+            case DEADLINE:
                 try {
+                    if (!command.startsWith("deadline ")) {
+                        throw new ChaiException("Use: deadline <description> /by <date or time>");
+                    }
                     addDeadline(tasks, command);
                 } catch (ChaiException e) {
                     System.out.println("OOPS!!! " + e.getMessage());
                 }
-            } else if (command.startsWith("event ")) {
+                break;
+            case EVENT:
                 try {
+                    if (!command.startsWith("event ")) {
+                        throw new ChaiException("Use: event <description> /from <start> /to <end>");
+                    }
                     addEvent(tasks, command);
                 } catch (ChaiException e) {
                     System.out.println("OOPS!!! " + e.getMessage());
                 }
-            } else if (command.equals("delete") || command.startsWith("delete ")) {
+                break;
+            case DELETE:
                 try {
                     deleteTask(tasks, command);
                 } catch (ChaiException e) {
                     System.out.println("OOPS!!! " + e.getMessage());
                 }
-            } else {
+                break;
+            case UNKNOWN:
+            default:
                 try {
                     throw new ChaiException("I don't know how to handle that command. Try: todo <description>");
                 } catch (ChaiException e) {
                     System.out.println("OOPS!!! " + e.getMessage());
                 }
+                break;
             }
 
-            System.out.println(separator);
+            if (isRunning) {
+                System.out.println(separator);
+            }
         }
         System.out.println(goodbye);
 
