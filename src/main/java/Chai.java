@@ -96,6 +96,12 @@ public class Chai {
                 } catch (ChaiException e) {
                     System.out.println("OOPS!!! " + e.getMessage());
                 }
+            } else if (command.equals("delete") || command.startsWith("delete ")) {
+                try {
+                    deleteTask(tasks, command);
+                } catch (ChaiException e) {
+                    System.out.println("OOPS!!! " + e.getMessage());
+                }
             } else {
                 try {
                     throw new ChaiException("I don't know how to handle that command. Try: todo <description>");
@@ -149,5 +155,29 @@ public class Chai {
             throw new ChaiException("An event needs a description, start, and end time.");
         }
         addTask(tasks, new Event(description, from, to));
+    }
+
+    /** Parses and removes a task in the form {@code delete <task number>}. */
+    private static void deleteTask(ArrayList<Task> tasks, String command) throws ChaiException {
+        String[] parts = command.split("\\s+");
+        if (parts.length != 2) {
+            throw new ChaiException("Please use the format: delete <task number>");
+        }
+
+        int taskNumber;
+        try {
+            taskNumber = Integer.parseInt(parts[1]);
+        } catch (NumberFormatException e) {
+            throw new ChaiException("The task number must be a whole number.");
+        }
+
+        if (taskNumber < 1 || taskNumber > tasks.size()) {
+            throw new ChaiException("That task number does not exist. Please choose a number from 1 to "
+                    + tasks.size() + ".");
+        }
+
+        Task removed = tasks.remove(taskNumber - 1);
+        System.out.println("Noted. I've removed this task:\n  " + removed);
+        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
     }
 }
