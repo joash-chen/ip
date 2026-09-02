@@ -30,15 +30,26 @@ public class Storage {
             return new ArrayList<>();
         }
 
+        List<String> lines;
         try {
-            ArrayList<Task> tasks = new ArrayList<>();
-            for (String line : Files.readAllLines(DATA_FILE)) {
-                tasks.add(fromFileLine(line));
-            }
-            return tasks;
+            lines = Files.readAllLines(DATA_FILE);
         } catch (IOException e) {
             throw new ChaiException("I could not load your saved tasks: " + e.getMessage());
         }
+
+        ArrayList<Task> tasks = new ArrayList<>();
+        for (int index = 0; index < lines.size(); index++) {
+            String line = lines.get(index);
+            if (line.isBlank()) {
+                continue;
+            }
+            try {
+                tasks.add(fromFileLine(line));
+            } catch (ChaiException e) {
+                throw new ChaiException("Saved data is invalid on line " + (index + 1) + ": " + e.getMessage());
+            }
+        }
+        return tasks;
     }
 
     /** Converts one task into a single line in the data file. */
@@ -55,26 +66,40 @@ public class Storage {
     }
 
     /** Recreates one task from a line previously written by {@link #toFileLine(Task)}. */
-    private static Task fromFileLine(String line) {
+    private static Task fromFileLine(String line) throws ChaiException {
         String[] parts = line.split(" \\| ", -1);
+        if (parts.length < 2 || (!parts[1].equals("0") && !parts[1].equals("1"))) {
+            throw new ChaiException("the completion status must be 0 or 1.");
+        }
+
         Task task;
         switch (parts[0]) {
         case "T":
+            requireFieldCount(parts, 3, "todo");
             task = new Todo(parts[2]);
             break;
         case "D":
+            requireFieldCount(parts, 4, "deadline");
             task = new Deadline(parts[2], parts[3]);
             break;
         case "E":
+            requireFieldCount(parts, 5, "event");
             task = new Event(parts[2], parts[3], parts[4]);
             break;
         default:
-            throw new IllegalArgumentException("Unknown task type: " + parts[0]);
+            throw new ChaiException("the task type must be T, D, or E.");
         }
 
         if (parts[1].equals("1")) {
             task.markAsDone();
         }
         return task;
+    }
+
+    /** Checks that a stored task line contains the expected number of fields. */
+    private static void requireFieldCount(String[] parts, int expectedCount, String taskType) throws ChaiException {
+        if (parts.length != expectedCount) {
+            throw new ChaiException("the " + taskType + " entry has the wrong number of fields.");
+        }
     }
 }
