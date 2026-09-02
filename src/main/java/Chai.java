@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -111,7 +113,7 @@ public class Chai {
             case DEADLINE:
                 try {
                     if (!command.startsWith("deadline ")) {
-                        throw new ChaiException("Use: deadline <description> /by <date or time>");
+                        throw new ChaiException("Use: deadline <description> /by <yyyy-MM-dd>");
                     }
                     addDeadline(tasks, command);
                 } catch (ChaiException e) {
@@ -121,7 +123,8 @@ public class Chai {
             case EVENT:
                 try {
                     if (!command.startsWith("event ")) {
-                        throw new ChaiException("Use: event <description> /from <start> /to <end>");
+                        throw new ChaiException(
+                                "Use: event <description> /from <yyyy-MM-dd> /to <yyyy-MM-dd>");
                     }
                     addEvent(tasks, command);
                 } catch (ChaiException e) {
@@ -161,36 +164,55 @@ public class Chai {
         System.out.println("Now you have " + tasks.size() + " tasks in the list.");
     }
 
-    /** Parses and adds a deadline command in the form {@code deadline <description> /by <time>}. */
+    /** Parses and adds a deadline command in the form {@code deadline <description> /by <yyyy-MM-dd>}. */
     private static void addDeadline(ArrayList<Task> tasks, String command) throws ChaiException {
         String body = command.substring("deadline ".length());
         int marker = body.indexOf(" /by ");
         if (marker < 0) {
-            throw new ChaiException("Use: deadline <description> /by <date or time>");
+            throw new ChaiException("Use: deadline <description> /by <yyyy-MM-dd>");
         }
 
         String description = body.substring(0, marker).trim();
-        String by = body.substring(marker + " /by ".length()).trim();
-        if (description.isEmpty() || by.isEmpty()) {
-            throw new ChaiException("A deadline needs both a description and a date or time.");
+        String byText = body.substring(marker + " /by ".length()).trim();
+        if (description.isEmpty() || byText.isEmpty()) {
+            throw new ChaiException("A deadline needs both a description and a date.");
+        }
+
+        LocalDate by;
+        try {
+            by = LocalDate.parse(byText);
+        } catch (DateTimeParseException e) {
+            throw new ChaiException("The deadline date must use yyyy-MM-dd, for example 2019-12-02.");
         }
         addTask(tasks, new Deadline(description, by));
     }
 
-    /** Parses and adds an event command in the form {@code event <description> /from <start> /to <end>}. */
+    /** Parses an event command containing ISO start and end dates, then adds the event. */
     private static void addEvent(ArrayList<Task> tasks, String command) throws ChaiException {
         String body = command.substring("event ".length());
         int fromMarker = body.indexOf(" /from ");
         int toMarker = body.indexOf(" /to ", fromMarker + 1);
         if (fromMarker < 0 || toMarker < 0) {
-            throw new ChaiException("Use: event <description> /from <start> /to <end>");
+            throw new ChaiException("Use: event <description> /from <yyyy-MM-dd> /to <yyyy-MM-dd>");
         }
 
         String description = body.substring(0, fromMarker).trim();
-        String from = body.substring(fromMarker + " /from ".length(), toMarker).trim();
-        String to = body.substring(toMarker + " /to ".length()).trim();
-        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            throw new ChaiException("An event needs a description, start, and end time.");
+        String fromText = body.substring(fromMarker + " /from ".length(), toMarker).trim();
+        String toText = body.substring(toMarker + " /to ".length()).trim();
+        if (description.isEmpty() || fromText.isEmpty() || toText.isEmpty()) {
+            throw new ChaiException("An event needs a description, start date, and end date.");
+        }
+
+        LocalDate from;
+        LocalDate to;
+        try {
+            from = LocalDate.parse(fromText);
+            to = LocalDate.parse(toText);
+        } catch (DateTimeParseException e) {
+            throw new ChaiException("Event dates must use yyyy-MM-dd, for example 2019-12-02.");
+        }
+        if (to.isBefore(from)) {
+            throw new ChaiException("The event end date cannot be before its start date.");
         }
         addTask(tasks, new Event(description, from, to));
     }
