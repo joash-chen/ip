@@ -14,7 +14,13 @@ public class Chai {
         String goodbye = "See you soon!\n" + separator;
 
         Scanner scanner = new Scanner(System.in);
-        ArrayList<Task> tasks = new ArrayList<>();
+        ArrayList<Task> tasks;
+        try {
+            tasks = Storage.load();
+        } catch (ChaiException e) {
+            System.out.println("OOPS!!! " + e.getMessage());
+            tasks = new ArrayList<>();
+        }
 
         System.out.println(introduction);
         boolean isRunning = true;

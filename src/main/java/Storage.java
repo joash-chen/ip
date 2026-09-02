@@ -24,6 +24,23 @@ public class Storage {
         }
     }
 
+    /** Loads saved tasks, or returns an empty list when Chai has not been run before. */
+    public static ArrayList<Task> load() throws ChaiException {
+        if (Files.notExists(DATA_FILE)) {
+            return new ArrayList<>();
+        }
+
+        try {
+            ArrayList<Task> tasks = new ArrayList<>();
+            for (String line : Files.readAllLines(DATA_FILE)) {
+                tasks.add(fromFileLine(line));
+            }
+            return tasks;
+        } catch (IOException e) {
+            throw new ChaiException("I could not load your saved tasks: " + e.getMessage());
+        }
+    }
+
     /** Converts one task into a single line in the data file. */
     private static String toFileLine(Task task) {
         String done = task.isDone ? "1" : "0";
@@ -35,5 +52,29 @@ public class Storage {
         }
         Event event = (Event) task;
         return "E | " + done + " | " + event.description + " | " + event.from + " | " + event.to;
+    }
+
+    /** Recreates one task from a line previously written by {@link #toFileLine(Task)}. */
+    private static Task fromFileLine(String line) {
+        String[] parts = line.split(" \\| ", -1);
+        Task task;
+        switch (parts[0]) {
+        case "T":
+            task = new Todo(parts[2]);
+            break;
+        case "D":
+            task = new Deadline(parts[2], parts[3]);
+            break;
+        case "E":
+            task = new Event(parts[2], parts[3], parts[4]);
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown task type: " + parts[0]);
+        }
+
+        if (parts[1].equals("1")) {
+            task.markAsDone();
+        }
+        return task;
     }
 }
