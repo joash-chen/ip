@@ -1,6 +1,8 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,7 +82,7 @@ public class Storage {
             break;
         case "D":
             requireFieldCount(parts, 4, "deadline");
-            task = new Deadline(parts[2], parts[3]);
+            task = new Deadline(parts[2], parseDate(parts[3]));
             break;
         case "E":
             requireFieldCount(parts, 5, "event");
@@ -100,6 +102,15 @@ public class Storage {
     private static void requireFieldCount(String[] parts, int expectedCount, String taskType) throws ChaiException {
         if (parts.length != expectedCount) {
             throw new ChaiException("the " + taskType + " entry has the wrong number of fields.");
+        }
+    }
+
+    /** Parses an ISO date stored in the human-editable data file. */
+    private static LocalDate parseDate(String value) throws ChaiException {
+        try {
+            return LocalDate.parse(value);
+        } catch (DateTimeParseException e) {
+            throw new ChaiException("the date must use yyyy-MM-dd.");
         }
     }
 }
