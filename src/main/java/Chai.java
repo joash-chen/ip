@@ -14,7 +14,13 @@ public class Chai {
         String goodbye = "See you soon!\n" + separator;
 
         Scanner scanner = new Scanner(System.in);
-        ArrayList<Task> tasks = new ArrayList<>();
+        ArrayList<Task> tasks;
+        try {
+            tasks = Storage.load();
+        } catch (ChaiException e) {
+            System.out.println("OOPS!!! " + e.getMessage());
+            tasks = new ArrayList<>();
+        }
 
         System.out.println(introduction);
         boolean isRunning = true;
@@ -51,10 +57,13 @@ public class Chai {
                         } else {
                             Task task = tasks.get(taskNumber - 1);
                             task.markAsDone();
+                            Storage.save(tasks);
                             output = "Marked task " + taskNumber + " as done:\n  " + task;
                         }
                     } catch (NumberFormatException e) {
                         output = "The task number must be a whole number.";
+                    } catch (ChaiException e) {
+                        output = "OOPS!!! " + e.getMessage();
                     }
                 }
                 System.out.println(output);
@@ -76,10 +85,13 @@ public class Chai {
                         } else {
                             Task task = tasks.get(taskNumber - 1);
                             task.markAsUndone();
+                            Storage.save(tasks);
                             output = "Marked task " + taskNumber + " as not done:\n  " + task;
                         }
                     } catch (NumberFormatException e) {
                         output = "The task number must be a whole number.";
+                    } catch (ChaiException e) {
+                        output = "OOPS!!! " + e.getMessage();
                     }
                 }
                 System.out.println(output);
@@ -142,8 +154,9 @@ public class Chai {
     }
 
     /** Adds a task and prints the standard confirmation message. */
-    private static void addTask(ArrayList<Task> tasks, Task task) {
+    private static void addTask(ArrayList<Task> tasks, Task task) throws ChaiException {
         tasks.add(task);
+        Storage.save(tasks);
         System.out.println("Got it. I've added this task:\n  " + task);
         System.out.println("Now you have " + tasks.size() + " tasks in the list.");
     }
@@ -202,6 +215,7 @@ public class Chai {
         }
 
         Task removed = tasks.remove(taskNumber - 1);
+        Storage.save(tasks);
         System.out.println("Noted. I've removed this task:\n  " + removed);
         System.out.println("Now you have " + tasks.size() + " tasks in the list.");
     }
