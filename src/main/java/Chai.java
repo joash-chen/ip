@@ -1,35 +1,24 @@
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class Chai {
     public static void main(String[] args) {
-        String banner = " ▄████▄   ██░ ██  ▄▄▄      ██▓\n" +
-                        "▒██▀ ▀█  ▓██░ ██▒▒████▄    ▒░░ \n" +
-                        "▒▓█    ▄ ▒██▀▀██░▒██  ▀█▄  ▒██░\n" +
-                        "▒▓▓▄ ▄██▒░▓█ ░██ ░██▄▄▄▄██ ▒██░\n" +
-                        "▒ ▓███▀ ░░▓█▒░██▓ ▓█   ▓██▒░██░\n" +
-                        "░ ░▒ ▒  ░ ▒ ░░▒░▒ ▒▒   ▓▒█░░ ▒░\n"; // used codex to make the ASCII art
-        String separator = "____________________________________________________________";
-        String introduction = separator + '\n' + banner + '\n' + "Hey I'm Chai :)\n" + "What do you need?\n" + separator;
-        String goodbye = "See you soon!\n" + separator;
-
-        Scanner scanner = new Scanner(System.in);
+        Ui ui = new Ui();
         ArrayList<Task> tasks;
         try {
             tasks = Storage.load();
         } catch (ChaiException e) {
-            System.out.println("OOPS!!! " + e.getMessage());
+            ui.showError(e.getMessage());
             tasks = new ArrayList<>();
         }
 
-        System.out.println(introduction);
+        ui.showWelcome();
         boolean isRunning = true;
         while (isRunning) {
-            String command = scanner.nextLine();
+            String command = ui.readCommand();
 
-            System.out.println(separator);
+            ui.showLine();
 
             String keyword = command.split("\\s+", 2)[0];
             CommandType commandType = CommandType.fromKeyword(keyword);
@@ -39,9 +28,7 @@ public class Chai {
                 isRunning = false;
                 break;
             case LIST:
-                for (int i = 0; i < tasks.size(); i++) {
-                    System.out.println((i + 1) + ". " + tasks.get(i));
-                }
+                ui.showTaskList(tasks);
                 break;
             case MARK: {
                 String[] parts = command.split("\\s+"); // used gemini for regex
@@ -68,7 +55,7 @@ public class Chai {
                         output = "OOPS!!! " + e.getMessage();
                     }
                 }
-                System.out.println(output);
+                ui.showMessage(output);
                 break;
             }
             case UNMARK: {
@@ -96,7 +83,7 @@ public class Chai {
                         output = "OOPS!!! " + e.getMessage();
                     }
                 }
-                System.out.println(output);
+                ui.showMessage(output);
                 break;
             }
             case TODO:
@@ -105,9 +92,9 @@ public class Chai {
                     if (description.isEmpty()) {
                         throw new ChaiException("A todo needs a description. Try: todo <description>");
                     }
-                    addTask(tasks, new Todo(description));
+                    addTask(tasks, new Todo(description), ui);
                 } catch (ChaiException e) {
-                    System.out.println("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             case DEADLINE:
@@ -115,9 +102,9 @@ public class Chai {
                     if (!command.startsWith("deadline ")) {
                         throw new ChaiException("Use: deadline <description> /by <yyyy-MM-dd>");
                     }
-                    addDeadline(tasks, command);
+                    addDeadline(tasks, command, ui);
                 } catch (ChaiException e) {
-                    System.out.println("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             case EVENT:
@@ -126,16 +113,16 @@ public class Chai {
                         throw new ChaiException(
                                 "Use: event <description> /from <yyyy-MM-dd> /to <yyyy-MM-dd>");
                     }
-                    addEvent(tasks, command);
+                    addEvent(tasks, command, ui);
                 } catch (ChaiException e) {
-                    System.out.println("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             case DELETE:
                 try {
-                    deleteTask(tasks, command);
+                    deleteTask(tasks, command, ui);
                 } catch (ChaiException e) {
-                    System.out.println("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             case UNKNOWN:
@@ -143,29 +130,28 @@ public class Chai {
                 try {
                     throw new ChaiException("I don't know how to handle that command. Try: todo <description>");
                 } catch (ChaiException e) {
-                    System.out.println("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             }
 
             if (isRunning) {
-                System.out.println(separator);
+                ui.showLine();
             }
         }
-        System.out.println(goodbye);
+        ui.showGoodbye();
 
     }
 
     /** Adds a task and prints the standard confirmation message. */
-    private static void addTask(ArrayList<Task> tasks, Task task) throws ChaiException {
+    private static void addTask(ArrayList<Task> tasks, Task task, Ui ui) throws ChaiException {
         tasks.add(task);
         Storage.save(tasks);
-        System.out.println("Got it. I've added this task:\n  " + task);
-        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+        ui.showTaskAdded(task, tasks.size());
     }
 
     /** Parses and adds a deadline command in the form {@code deadline <description> /by <yyyy-MM-dd>}. */
-    private static void addDeadline(ArrayList<Task> tasks, String command) throws ChaiException {
+    private static void addDeadline(ArrayList<Task> tasks, String command, Ui ui) throws ChaiException {
         String body = command.substring("deadline ".length());
         int marker = body.indexOf(" /by ");
         if (marker < 0) {
@@ -184,11 +170,11 @@ public class Chai {
         } catch (DateTimeParseException e) {
             throw new ChaiException("The deadline date must use yyyy-MM-dd, for example 2019-12-02.");
         }
-        addTask(tasks, new Deadline(description, by));
+        addTask(tasks, new Deadline(description, by), ui);
     }
 
     /** Parses an event command containing ISO start and end dates, then adds the event. */
-    private static void addEvent(ArrayList<Task> tasks, String command) throws ChaiException {
+    private static void addEvent(ArrayList<Task> tasks, String command, Ui ui) throws ChaiException {
         String body = command.substring("event ".length());
         int fromMarker = body.indexOf(" /from ");
         int toMarker = body.indexOf(" /to ", fromMarker + 1);
@@ -214,11 +200,11 @@ public class Chai {
         if (to.isBefore(from)) {
             throw new ChaiException("The event end date cannot be before its start date.");
         }
-        addTask(tasks, new Event(description, from, to));
+        addTask(tasks, new Event(description, from, to), ui);
     }
 
     /** Parses and removes a task in the form {@code delete <task number>}. */
-    private static void deleteTask(ArrayList<Task> tasks, String command) throws ChaiException {
+    private static void deleteTask(ArrayList<Task> tasks, String command, Ui ui) throws ChaiException {
         String[] parts = command.split("\\s+");
         if (parts.length != 2) {
             throw new ChaiException("Please use the format: delete <task number>");
@@ -238,7 +224,6 @@ public class Chai {
 
         Task removed = tasks.remove(taskNumber - 1);
         Storage.save(tasks);
-        System.out.println("Noted. I've removed this task:\n  " + removed);
-        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+        ui.showTaskDeleted(removed, tasks.size());
     }
 }
