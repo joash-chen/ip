@@ -50,7 +50,7 @@ public class DialogBox extends HBox {
      * @return Chai dialog box.
      */
     public static DialogBox getChaiDialog(String text) {
-        DialogBox dialogBox = new DialogBox(text, "C", "chai-dialog");
+        DialogBox dialogBox = new DialogBox(text, "☕", "chai-dialog");
         dialogBox.flip();
         return dialogBox;
     }
