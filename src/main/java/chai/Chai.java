@@ -119,12 +119,9 @@ public class Chai {
     private String findTasks(String command) throws ChaiException {
         String keyword = Parser.parseFindKeyword(command);
 
-        ArrayList<Task> matchingTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.containsKeyword(keyword)) {
-                matchingTasks.add(task);
-            }
-        }
+        List<Task> matchingTasks = tasks.stream().
+                filter(task -> task.containsKeyword(keyword)).
+                toList();
         return formatTaskList(matchingTasks, "Here are the matching tasks in your list:");
     }
 
