@@ -19,7 +19,16 @@ public class Storage {
     /** The location used to persist Chai's task list. */
     private static final Path DATA_FILE = Path.of("data", "chai.txt");
 
-    /** Writes every task in the list to the data file. */
+    /** Prevents instantiation of this file utility class. */
+    private Storage() {
+    }
+
+    /**
+     * Writes every task in the list to the data file.
+     *
+     * @param tasks Tasks to persist.
+     * @throws ChaiException If the data directory or file cannot be written.
+     */
     public static void save(List<Task> tasks) throws ChaiException {
         List<String> lines = new ArrayList<>();
         for (Task task : tasks) {
@@ -34,7 +43,12 @@ public class Storage {
         }
     }
 
-    /** Loads saved tasks, or returns an empty list when Chai has not been run before. */
+    /**
+     * Loads saved tasks, or returns an empty list when Chai has not been run before.
+     *
+     * @return Tasks reconstructed from the data file.
+     * @throws ChaiException If the data file cannot be read or contains invalid data.
+     */
     public static ArrayList<Task> load() throws ChaiException {
         if (Files.notExists(DATA_FILE)) {
             return new ArrayList<>();

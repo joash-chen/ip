@@ -16,6 +16,10 @@ import java.util.ArrayList;
  * and persistent storage.
  */
 public class Chai {
+    /** Prevents instantiation of the command-line entry-point class. */
+    private Chai() {
+    }
+
     /**
      * Starts Chai's command loop.
      *
