@@ -117,12 +117,19 @@ public class Chai {
     private String setTaskCompletion(String command, boolean isDone) throws ChaiException {
         int taskIndex = Parser.parseTaskIndex(command, isDone ? "mark" : "unmark", tasks.size());
         Task task = tasks.get(taskIndex);
+        boolean wasDone = task.isDone();
         if (isDone) {
             task.markAsDone();
         } else {
             task.markAsUndone();
         }
-        storage.save(tasks);
+        saveOrRollback(() -> {
+            if (wasDone) {
+                task.markAsDone();
+            } else {
+                task.markAsUndone();
+            }
+        });
 
         String state = isDone ? "done" : "not done";
         return "Marked task " + (taskIndex + 1) + " as " + state + ":\n  " + task;
@@ -132,7 +139,7 @@ public class Chai {
     private String deleteTask(String command) throws ChaiException {
         int taskIndex = Parser.parseTaskIndex(command, "delete", tasks.size());
         Task removed = tasks.remove(taskIndex);
-        storage.save(tasks);
+        saveOrRollback(() -> tasks.add(taskIndex, removed));
         return "Noted. I've removed this task:\n  " + removed
                 + "\nNow you have " + tasks.size() + " tasks in the list.";
     }
@@ -150,17 +157,31 @@ public class Chai {
     /** Sorts dated tasks chronologically and places undated tasks afterward. */
     private String sortTasks(String command) throws ChaiException {
         Parser.requireNoArguments(command, "sort");
+        ArrayList<Task> originalOrder = new ArrayList<>(tasks);
         tasks.sort(Comparator.comparing(Task::getSortDate));
-        storage.save(tasks);
+        saveOrRollback(() -> {
+            tasks.clear();
+            tasks.addAll(originalOrder);
+        });
         return formatTaskList(tasks, "Here are your tasks sorted chronologically:");
     }
 
     /** Adds and saves a task, then returns the standard confirmation. */
     private String addTask(Task task) throws ChaiException {
         tasks.add(task);
-        storage.save(tasks);
+        saveOrRollback(() -> tasks.remove(tasks.size() - 1));
         return "Got it. I've added this task:\n  " + task
                 + "\nNow you have " + tasks.size() + " tasks in the list.";
+    }
+
+    /** Saves task changes, reverting the in-memory mutation when saving fails. */
+    private void saveOrRollback(Runnable rollback) throws ChaiException {
+        try {
+            storage.save(tasks);
+        } catch (ChaiException e) {
+            rollback.run();
+            throw e;
+        }
     }
 
     /** Formats a numbered task list with the given heading. */
