@@ -12,6 +12,9 @@ import javafx.util.Duration;
 
 /** Controls Chai's main conversation window. */
 public class MainWindow {
+    /** Prefix identifying responses that should use error styling. */
+    private static final String ERROR_PREFIX = "Oops —";
+
     @FXML
     private ScrollPane scrollPane;
 
@@ -40,7 +43,7 @@ public class MainWindow {
      */
     public void setChai(Chai chai) {
         this.chai = chai;
-        dialogContainer.getChildren().add(DialogBox.getChaiDialog(chai.getWelcomeMessage()));
+        dialogContainer.getChildren().add(createChaiDialog(chai.getWelcomeMessage()));
         Platform.runLater(userInput::requestFocus);
     }
 
@@ -55,7 +58,7 @@ public class MainWindow {
         String chaiText = chai.getResponse(userText);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(userText),
-                DialogBox.getChaiDialog(chaiText));
+                createChaiDialog(chaiText));
         userInput.clear();
 
         if (userText.equalsIgnoreCase("bye")) {
@@ -65,5 +68,12 @@ public class MainWindow {
             closeDelay.setOnFinished(event -> Platform.exit());
             closeDelay.play();
         }
+    }
+
+    /** Creates a normal or error-styled Chai dialog from response text. */
+    private DialogBox createChaiDialog(String text) {
+        return text.startsWith(ERROR_PREFIX)
+                ? DialogBox.getErrorDialog(text)
+                : DialogBox.getChaiDialog(text);
     }
 }
