@@ -1,9 +1,9 @@
 package chai.ui;
 
-import chai.task.Task;
-
 import java.util.List;
 import java.util.Scanner;
+
+import chai.task.Task;
 
 /** Handles all console input and output for Chai. */
 public class Ui {

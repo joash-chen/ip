@@ -1,11 +1,5 @@
 package chai.storage;
 
-import chai.ChaiException;
-import chai.task.Deadline;
-import chai.task.Event;
-import chai.task.Task;
-import chai.task.Todo;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +7,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+
+import chai.ChaiException;
+import chai.task.Deadline;
+import chai.task.Event;
+import chai.task.Task;
+import chai.task.Todo;
 
 /** Saves Chai's tasks in a text file relative to the project root. */
 public class Storage {
@@ -99,25 +99,25 @@ public class Storage {
 
         Task task;
         switch (parts[0]) {
-        case "T":
-            requireFieldCount(parts, 3, "todo");
-            task = new Todo(parts[2]);
-            break;
-        case "D":
-            requireFieldCount(parts, 4, "deadline");
-            task = new Deadline(parts[2], parseDate(parts[3]));
-            break;
-        case "E":
-            requireFieldCount(parts, 5, "event");
-            LocalDate from = parseDate(parts[3]);
-            LocalDate to = parseDate(parts[4]);
-            if (to.isBefore(from)) {
-                throw new ChaiException("the event end date cannot be before its start date.");
-            }
-            task = new Event(parts[2], from, to);
-            break;
-        default:
-            throw new ChaiException("the task type must be T, D, or E.");
+            case "T":
+                requireFieldCount(parts, 3, "todo");
+                task = new Todo(parts[2]);
+                break;
+            case "D":
+                requireFieldCount(parts, 4, "deadline");
+                task = new Deadline(parts[2], parseDate(parts[3]));
+                break;
+            case "E":
+                requireFieldCount(parts, 5, "event");
+                LocalDate from = parseDate(parts[3]);
+                LocalDate to = parseDate(parts[4]);
+                if (to.isBefore(from)) {
+                    throw new ChaiException("the event end date cannot be before its start date.");
+                }
+                task = new Event(parts[2], from, to);
+                break;
+            default:
+                throw new ChaiException("the task type must be T, D, or E.");
         }
 
         if (parts[1].equals("1")) {
