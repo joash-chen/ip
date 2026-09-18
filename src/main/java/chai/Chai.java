@@ -147,6 +147,13 @@ public class Chai {
                         ui.showError(e.getMessage());
                     }
                     break;
+                case FIND:
+                    try {
+                        findTasks(tasks, command, ui);
+                    } catch (ChaiException e) {
+                        ui.showError(e.getMessage());
+                    }
+                    break;
                 case UNKNOWN:
                 default:
                     try {
@@ -247,5 +254,21 @@ public class Chai {
         Task removed = tasks.remove(taskNumber - 1);
         Storage.save(tasks);
         ui.showTaskDeleted(removed, tasks.size());
+    }
+
+    /** Finds and displays tasks whose descriptions contain the command's keyword. */
+    private static void findTasks(ArrayList<Task> tasks, String command, Ui ui) throws ChaiException {
+        String keyword = command.substring("find".length()).trim();
+        if (keyword.isEmpty()) {
+            throw new ChaiException("Please use the format: find <keyword>");
+        }
+
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.containsKeyword(keyword)) {
+                matchingTasks.add(task);
+            }
+        }
+        ui.showMatchingTasks(matchingTasks);
     }
 }

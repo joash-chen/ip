@@ -1,5 +1,7 @@
 package chai.task;
 
+import java.util.Locale;
+
 /**
  * A task that can be tracked in the task list.
  *
@@ -47,6 +49,19 @@ public abstract class Task {
      */
     public boolean isDone() {
         return isDone;
+    }
+
+    /**
+     * Returns whether this task's description contains the given keyword.
+     * Matching is case-insensitive.
+     *
+     * @param keyword Keyword to search for.
+     * @return {@code true} if the description contains the keyword.
+     */
+    public boolean containsKeyword(String keyword) {
+        String normalizedDescription = description.toLowerCase(Locale.ROOT);
+        String normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
+        return normalizedDescription.contains(normalizedKeyword);
     }
 
     /** Marks this task as completed. */

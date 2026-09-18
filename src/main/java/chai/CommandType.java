@@ -18,6 +18,8 @@ public enum CommandType {
     EVENT,
     /** Deletes a task. */
     DELETE,
+    /** Finds tasks containing a keyword. */
+    FIND,
     /** Represents a command Chai does not recognize. */
     UNKNOWN;
 
