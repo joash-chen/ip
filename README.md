@@ -38,4 +38,5 @@ Checkstyle reports are generated under `build/reports/checkstyle/` if a violatio
 - `unmark <task number>`
 - `delete <task number>`
 - `find <keyword>`
+- `sort` (orders deadlines by due date and events by start date, followed by todos)
 - `bye`
