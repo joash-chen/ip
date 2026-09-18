@@ -23,22 +23,21 @@ public class Ui {
      * @param chai Chai session that processes commands.
      */
     public void run(Chai chai) {
-        showMessage(SEPARATOR);
-        showMessage(chai.getWelcomeMessage());
-        showMessage(SEPARATOR);
+        showMessages(SEPARATOR, chai.getWelcomeMessage(), SEPARATOR);
 
         boolean isRunning = true;
         while (isRunning) {
             String command = scanner.nextLine();
-            showMessage(SEPARATOR);
-            showMessage(chai.getResponse(command));
+            String response = chai.getResponse(command);
             isRunning = !command.trim().equalsIgnoreCase("bye");
-            showMessage(SEPARATOR);
+            showMessages(SEPARATOR, response, SEPARATOR);
         }
     }
 
-    /** Displays a message in the console. */
-    private void showMessage(String message) {
-        System.out.println(message);
+    /** Displays any number of messages in order in the console. */
+    private void showMessages(String... messages) {
+        for (String message : messages) {
+            System.out.println(message);
+        }
     }
 }
