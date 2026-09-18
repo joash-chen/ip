@@ -73,3 +73,9 @@ shadowJar {
 run {
     standardInput = System.in
 }
+
+tasks.register('generateUiScreenshot', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'chai.UiScreenshotGenerator'
+}
