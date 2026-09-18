@@ -6,10 +6,10 @@ Chai is a calm desktop task companion for keeping todos, deadlines, and events i
 
 ## Quick start
 
-1. Install Java 25.
-2. Download `chai.jar` from the [latest GitHub release](https://github.com/joash-chen/ip/releases).
-3. Open a terminal in the folder containing the JAR.
-4. Run `java -jar chai.jar`.
+1. Install Java 25 and Git.
+2. Clone this repository and open a terminal in its root folder.
+3. Run `./gradlew shadowJar` on macOS/Linux or `gradlew shadowJar` on Windows.
+4. Run `java -jar build/libs/chai.jar`.
 
 Chai creates `data/chai.txt` beside the JAR when it first needs to save a task. If the file or folder does not exist yet, Chai creates it automatically.
 
