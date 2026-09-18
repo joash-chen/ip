@@ -46,115 +46,116 @@ public class Chai {
             CommandType commandType = CommandType.fromKeyword(keyword);
 
             switch (commandType) {
-            case BYE:
-                isRunning = false;
-                break;
-            case LIST:
-                ui.showTaskList(tasks);
-                break;
-            case MARK: {
-                String[] parts = command.split("\\s+"); // used gemini for regex
-                String output;
+                case BYE:
+                    isRunning = false;
+                    break;
+                case LIST:
+                    ui.showTaskList(tasks);
+                    break;
+                case MARK: {
+                    String[] parts = command.split("\\s+");
+                    String output;
 
-                if (parts.length != 2) {
-                    output = "Please use the format: mark <task number>";
-                } else {
-                    try {
-                        int taskNumber = Integer.parseInt(parts[1]);
+                    if (parts.length != 2) {
+                        output = "Please use the format: mark <task number>";
+                    } else {
+                        try {
+                            int taskNumber = Integer.parseInt(parts[1]);
 
-                        if (taskNumber < 1 || taskNumber > tasks.size()) {
-                            output = "That task number does not exist. Please choose a number from 1 to "
-                                    + tasks.size() + ".";
-                        } else {
-                            Task task = tasks.get(taskNumber - 1);
-                            task.markAsDone();
-                            Storage.save(tasks);
-                            output = "Marked task " + taskNumber + " as done:\n  " + task;
+                            if (taskNumber < 1 || taskNumber > tasks.size()) {
+                                output = "That task number does not exist. Please choose a number from 1 to "
+                                        + tasks.size() + ".";
+                            } else {
+                                Task task = tasks.get(taskNumber - 1);
+                                task.markAsDone();
+                                Storage.save(tasks);
+                                output = "Marked task " + taskNumber + " as done:\n  " + task;
+                            }
+                        } catch (NumberFormatException e) {
+                            output = "The task number must be a whole number.";
+                        } catch (ChaiException e) {
+                            output = "OOPS!!! " + e.getMessage();
                         }
-                    } catch (NumberFormatException e) {
-                        output = "The task number must be a whole number.";
-                    } catch (ChaiException e) {
-                        output = "OOPS!!! " + e.getMessage();
                     }
+                    ui.showMessage(output);
+                    break;
                 }
-                ui.showMessage(output);
-                break;
-            }
-            case UNMARK: {
-                String[] parts = command.split("\\s+");
-                String output;
+                case UNMARK: {
+                    String[] parts = command.split("\\s+");
+                    String output;
 
-                if (parts.length != 2) {
-                    output = "Please use the format: unmark <task number>";
-                } else {
-                    try {
-                        int taskNumber = Integer.parseInt(parts[1]);
+                    if (parts.length != 2) {
+                        output = "Please use the format: unmark <task number>";
+                    } else {
+                        try {
+                            int taskNumber = Integer.parseInt(parts[1]);
 
-                        if (taskNumber < 1 || taskNumber > tasks.size()) {
-                            output = "That task number does not exist. Please choose a number from 1 to "
-                                    + tasks.size() + ".";
-                        } else {
-                            Task task = tasks.get(taskNumber - 1);
-                            task.markAsUndone();
-                            Storage.save(tasks);
-                            output = "Marked task " + taskNumber + " as not done:\n  " + task;
+                            if (taskNumber < 1 || taskNumber > tasks.size()) {
+                                output = "That task number does not exist. Please choose a number from 1 to "
+                                        + tasks.size() + ".";
+                            } else {
+                                Task task = tasks.get(taskNumber - 1);
+                                task.markAsUndone();
+                                Storage.save(tasks);
+                                output = "Marked task " + taskNumber + " as not done:\n  " + task;
+                            }
+                        } catch (NumberFormatException e) {
+                            output = "The task number must be a whole number.";
+                        } catch (ChaiException e) {
+                            output = "OOPS!!! " + e.getMessage();
                         }
-                    } catch (NumberFormatException e) {
-                        output = "The task number must be a whole number.";
+                    }
+                    ui.showMessage(output);
+                    break;
+                }
+                case TODO:
+                    try {
+                        String description = command.substring("todo".length()).trim();
+                        if (description.isEmpty()) {
+                            throw new ChaiException("A todo needs a description. Try: todo <description>");
+                        }
+                        addTask(tasks, new Todo(description), ui);
                     } catch (ChaiException e) {
-                        output = "OOPS!!! " + e.getMessage();
+                        ui.showError(e.getMessage());
                     }
-                }
-                ui.showMessage(output);
-                break;
-            }
-            case TODO:
-                try {
-                    String description = command.substring("todo".length()).trim();
-                    if (description.isEmpty()) {
-                        throw new ChaiException("A todo needs a description. Try: todo <description>");
+                    break;
+                case DEADLINE:
+                    try {
+                        if (!command.startsWith("deadline ")) {
+                            throw new ChaiException("Use: deadline <description> /by <yyyy-MM-dd>");
+                        }
+                        addDeadline(tasks, command, ui);
+                    } catch (ChaiException e) {
+                        ui.showError(e.getMessage());
                     }
-                    addTask(tasks, new Todo(description), ui);
-                } catch (ChaiException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
-            case DEADLINE:
-                try {
-                    if (!command.startsWith("deadline ")) {
-                        throw new ChaiException("Use: deadline <description> /by <yyyy-MM-dd>");
+                    break;
+                case EVENT:
+                    try {
+                        if (!command.startsWith("event ")) {
+                            throw new ChaiException(
+                                    "Use: event <description> /from <yyyy-MM-dd> /to <yyyy-MM-dd>");
+                        }
+                        addEvent(tasks, command, ui);
+                    } catch (ChaiException e) {
+                        ui.showError(e.getMessage());
                     }
-                    addDeadline(tasks, command, ui);
-                } catch (ChaiException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
-            case EVENT:
-                try {
-                    if (!command.startsWith("event ")) {
+                    break;
+                case DELETE:
+                    try {
+                        deleteTask(tasks, command, ui);
+                    } catch (ChaiException e) {
+                        ui.showError(e.getMessage());
+                    }
+                    break;
+                case UNKNOWN:
+                default:
+                    try {
                         throw new ChaiException(
-                                "Use: event <description> /from <yyyy-MM-dd> /to <yyyy-MM-dd>");
+                                "I don't know how to handle that command. Try: todo <description>");
+                    } catch (ChaiException e) {
+                        ui.showError(e.getMessage());
                     }
-                    addEvent(tasks, command, ui);
-                } catch (ChaiException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
-            case DELETE:
-                try {
-                    deleteTask(tasks, command, ui);
-                } catch (ChaiException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
-            case UNKNOWN:
-            default:
-                try {
-                    throw new ChaiException("I don't know how to handle that command. Try: todo <description>");
-                } catch (ChaiException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
+                    break;
             }
 
             if (isRunning) {
@@ -162,7 +163,6 @@ public class Chai {
             }
         }
         ui.showGoodbye();
-
     }
 
     /** Adds a task and prints the standard confirmation message. */
