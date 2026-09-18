@@ -1,5 +1,6 @@
 package chai;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -62,5 +63,10 @@ public class ParserTest {
                 ChaiException.class, () -> Parser.requireNoArguments("sort date", "sort"));
 
         assertEquals("Use: sort", exception.getMessage());
+    }
+
+    @Test
+    public void requireNoArguments_exactCommand_noExceptionThrown() {
+        assertDoesNotThrow(() -> Parser.requireNoArguments("sort", "sort"));
     }
 }
