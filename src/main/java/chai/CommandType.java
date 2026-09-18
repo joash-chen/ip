@@ -10,6 +10,7 @@ public enum CommandType {
     DEADLINE,
     EVENT,
     DELETE,
+    FIND,
     UNKNOWN;
 
     /** Maps the first word of user input to a {@code CommandType}, defaulting to {@code UNKNOWN}. */
