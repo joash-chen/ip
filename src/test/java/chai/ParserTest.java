@@ -25,7 +25,7 @@ public class ParserTest {
 
     @Test
     public void parseDeadline_validAndInvalidDates_returnsTaskOrThrows() throws ChaiException {
-        Deadline deadline = Parser.parseDeadline("deadline return book /by 2026-09-30");
+        Deadline deadline = Parser.parseDeadline("DEADLINE  return book   /BY  2026-09-30");
 
         assertEquals("return book", deadline.getDescription());
         assertEquals(LocalDate.of(2026, 9, 30), deadline.getBy());
@@ -35,7 +35,8 @@ public class ParserTest {
 
     @Test
     public void parseEvent_validAndReversedDates_returnsTaskOrThrows() throws ChaiException {
-        Event event = Parser.parseEvent("event conference /from 2026-09-20 /to 2026-09-22");
+        Event event = Parser.parseEvent(
+                "EVENT  conference   /FROM  2026-09-20   /TO  2026-09-22");
 
         assertEquals("conference", event.getDescription());
         assertEquals(LocalDate.of(2026, 9, 20), event.getFrom());
@@ -67,6 +68,6 @@ public class ParserTest {
 
     @Test
     public void requireNoArguments_exactCommand_noExceptionThrown() {
-        assertDoesNotThrow(() -> Parser.requireNoArguments("sort", "sort"));
+        assertDoesNotThrow(() -> Parser.requireNoArguments("SORT", "sort"));
     }
 }

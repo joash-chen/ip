@@ -101,11 +101,11 @@ public class Storage {
         switch (parts[0]) {
             case "T":
                 requireFieldCount(parts, 3, "todo");
-                task = new Todo(parts[2]);
+                task = new Todo(requireDescription(parts[2]));
                 break;
             case "D":
                 requireFieldCount(parts, 4, "deadline");
-                task = new Deadline(parts[2], parseDate(parts[3]));
+                task = new Deadline(requireDescription(parts[2]), parseDate(parts[3]));
                 break;
             case "E":
                 requireFieldCount(parts, 5, "event");
@@ -114,7 +114,7 @@ public class Storage {
                 if (to.isBefore(from)) {
                     throw new ChaiException("the event end date cannot be before its start date.");
                 }
-                task = new Event(parts[2], from, to);
+                task = new Event(requireDescription(parts[2]), from, to);
                 break;
             default:
                 throw new ChaiException("the task type must be T, D, or E.");
@@ -131,6 +131,14 @@ public class Storage {
         if (parts.length != expectedCount) {
             throw new ChaiException("the " + taskType + " entry has the wrong number of fields.");
         }
+    }
+
+    /** Returns a stored description after checking that it contains visible text. */
+    private static String requireDescription(String description) throws ChaiException {
+        if (description.isBlank()) {
+            throw new ChaiException("the task description cannot be blank.");
+        }
+        return description;
     }
 
     /** Parses an ISO date stored in the human-editable data file. */
