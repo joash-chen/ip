@@ -26,7 +26,7 @@ public class Ui {
         showMessages(SEPARATOR, chai.getWelcomeMessage(), SEPARATOR);
 
         boolean isRunning = true;
-        while (isRunning) {
+        while (isRunning && scanner.hasNextLine()) {
             String command = scanner.nextLine();
             String response = chai.getResponse(command);
             isRunning = !command.trim().equalsIgnoreCase("bye");

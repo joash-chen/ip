@@ -65,8 +65,10 @@ public class Chai {
         try {
             switch (commandType) {
                 case BYE:
+                    Parser.requireNoArguments(normalizedCommand, "bye");
                     return "See you soon!";
                 case LIST:
+                    Parser.requireNoArguments(normalizedCommand, "list");
                     return formatTaskList(tasks, "Here are the tasks in your list:");
                 case MARK:
                     return setTaskCompletion(normalizedCommand, true);

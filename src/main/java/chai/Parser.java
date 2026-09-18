@@ -2,6 +2,8 @@ package chai;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import chai.task.Deadline;
 import chai.task.Event;
@@ -9,6 +11,14 @@ import chai.task.Todo;
 
 /** Converts raw command text into command types, task data, and indexes. */
 public final class Parser {
+    /** Deadline syntax with flexible whitespace and case-insensitive markers. */
+    private static final Pattern DEADLINE_COMMAND = Pattern.compile(
+            "^deadline\\s+(.+?)\\s+/by\\s+(.+)$", Pattern.CASE_INSENSITIVE);
+
+    /** Event syntax with flexible whitespace and case-insensitive markers. */
+    private static final Pattern EVENT_COMMAND = Pattern.compile(
+            "^event\\s+(.+?)\\s+/from\\s+(.+?)\\s+/to\\s+(.+)$", Pattern.CASE_INSENSITIVE);
+
     /** Prevents instantiation of this command parsing utility class. */
     private Parser() {
     }
@@ -30,18 +40,13 @@ public final class Parser {
 
     /** Parses a deadline command containing an ISO date. */
     public static Deadline parseDeadline(String command) throws ChaiException {
-        if (!command.startsWith("deadline ")) {
+        Matcher matcher = DEADLINE_COMMAND.matcher(command);
+        if (!matcher.matches()) {
             throw new ChaiException("Use: deadline <description> /by <yyyy-MM-dd>");
         }
 
-        String body = command.substring("deadline ".length());
-        int marker = body.indexOf(" /by ");
-        if (marker < 0) {
-            throw new ChaiException("Use: deadline <description> /by <yyyy-MM-dd>");
-        }
-
-        String description = body.substring(0, marker).trim();
-        String byText = body.substring(marker + " /by ".length()).trim();
+        String description = matcher.group(1).trim();
+        String byText = matcher.group(2).trim();
         if (description.isEmpty() || byText.isEmpty()) {
             throw new ChaiException("A deadline needs both a description and a date.");
         }
@@ -55,20 +60,14 @@ public final class Parser {
 
     /** Parses an event command containing ISO start and end dates. */
     public static Event parseEvent(String command) throws ChaiException {
-        if (!command.startsWith("event ")) {
+        Matcher matcher = EVENT_COMMAND.matcher(command);
+        if (!matcher.matches()) {
             throw new ChaiException("Use: event <description> /from <yyyy-MM-dd> /to <yyyy-MM-dd>");
         }
 
-        String body = command.substring("event ".length());
-        int fromMarker = body.indexOf(" /from ");
-        int toMarker = body.indexOf(" /to ", fromMarker + 1);
-        if (fromMarker < 0 || toMarker < 0) {
-            throw new ChaiException("Use: event <description> /from <yyyy-MM-dd> /to <yyyy-MM-dd>");
-        }
-
-        String description = body.substring(0, fromMarker).trim();
-        String fromText = body.substring(fromMarker + " /from ".length(), toMarker).trim();
-        String toText = body.substring(toMarker + " /to ".length()).trim();
+        String description = matcher.group(1).trim();
+        String fromText = matcher.group(2).trim();
+        String toText = matcher.group(3).trim();
         if (description.isEmpty() || fromText.isEmpty() || toText.isEmpty()) {
             throw new ChaiException("An event needs a description, start date, and end date.");
         }
@@ -119,7 +118,7 @@ public final class Parser {
 
     /** Checks that a command contains only its keyword. */
     public static void requireNoArguments(String command, String keyword) throws ChaiException {
-        if (!command.equals(keyword)) {
+        if (!command.equalsIgnoreCase(keyword)) {
             throw new ChaiException("Use: " + keyword);
         }
     }
