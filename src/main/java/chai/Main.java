@@ -24,6 +24,8 @@ public class Main extends Application {
         stage.setTitle("Chai — Calm Task Companion");
         stage.setMinHeight(500);
         stage.setMinWidth(420);
+        stage.setHeight(700);
+        stage.setWidth(520);
         stage.show();
     }
 }

@@ -7,7 +7,7 @@
          xmlns="http://javafx.com/javafx/17"
          xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <Label fx:id="dialog" maxWidth="340.0" styleClass="dialog-bubble" wrapText="true" />
+        <Label fx:id="dialog" styleClass="dialog-bubble" wrapText="true" />
         <Label fx:id="avatar" alignment="CENTER" minHeight="44.0" minWidth="44.0"
                prefHeight="44.0" prefWidth="44.0" styleClass="avatar" />
     </children>

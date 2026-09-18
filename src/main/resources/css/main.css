@@ -12,8 +12,25 @@
     -fx-background-color: transparent;
 }
 
+.app-header {
+    -fx-alignment: center-left;
+    -fx-background-color: linear-gradient(to right, -chai-brown, #6f4a3d);
+    -fx-padding: 13 20 11 20;
+}
+
+.app-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.app-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #f1ddc8;
+}
+
 .dialog-container {
-    -fx-padding: 18 12 18 12;
+    -fx-padding: 18 14 18 14;
 }
 
 .dialog-box {
@@ -29,9 +46,22 @@
     -fx-text-fill: -chai-brown;
 }
 
+.user-dialog .dialog-bubble {
+    -fx-background-color: -chai-brown;
+    -fx-background-radius: 16 16 4 16;
+    -fx-text-fill: white;
+}
+
 .chai-dialog .dialog-bubble {
     -fx-background-color: #e3efe8;
     -fx-background-radius: 16 16 16 4;
+}
+
+.error-dialog .dialog-bubble {
+    -fx-background-color: #fce8e3;
+    -fx-border-color: #d47b68;
+    -fx-border-radius: 16 16 16 4;
+    -fx-text-fill: #7c3026;
 }
 
 .avatar {
@@ -45,6 +75,11 @@
 .chai-dialog .avatar {
     -fx-background-color: -chai-green;
     -fx-font-size: 20px;
+}
+
+.error-dialog .avatar {
+    -fx-background-color: #b94f3d;
+    -fx-font-size: 17px;
 }
 
 .input-bar {
@@ -80,4 +115,13 @@
 
 .button:pressed {
     -fx-translate-y: 1;
+}
+
+.scroll-bar:vertical {
+    -fx-pref-width: 8;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(95, 59, 45, 0.24);
+    -fx-background-radius: 4;
 }
