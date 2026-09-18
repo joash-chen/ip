@@ -1,6 +1,7 @@
 package chai.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDate;
 
@@ -8,6 +9,11 @@ import org.junit.jupiter.api.Test;
 
 /** Tests deadline display formatting and completion state. */
 public class DeadlineTest {
+
+    @Test
+    public void constructor_nullDate_assertionErrorThrown() {
+        assertThrows(AssertionError.class, () -> new Deadline("return book", null));
+    }
 
     @Test
     public void toString_newDeadline_formatsDateAndIncompleteStatus() {
