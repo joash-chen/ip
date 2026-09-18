@@ -21,7 +21,7 @@ public class Main extends Application {
         fxmlLoader.<MainWindow>getController().setChai(chai);
 
         stage.setScene(new Scene(root));
-        stage.setTitle("Chai");
+        stage.setTitle("Chai — Calm Task Companion");
         stage.setMinHeight(500);
         stage.setMinWidth(420);
         stage.show();

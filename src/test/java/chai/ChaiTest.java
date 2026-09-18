@@ -59,11 +59,11 @@ public class ChaiTest {
     public void getResponse_invalidCommands_returnsSpecificErrors() {
         Chai chai = createChai("errors");
 
-        assertEquals("OOPS!!! Use: list", chai.getResponse("list now"));
-        assertEquals("OOPS!!! Use: bye", chai.getResponse("bye now"));
+        assertEquals("Oops — Use: list", chai.getResponse("list now"));
+        assertEquals("Oops — Use: bye", chai.getResponse("bye now"));
         assertTrue(chai.getResponse("mark 1").contains("does not exist"));
         assertTrue(chai.getResponse("deadline report /by tomorrow").contains("yyyy-MM-dd"));
-        assertTrue(chai.getResponse("nonsense").contains("don't know"));
+        assertTrue(chai.getResponse("nonsense").contains("isn't on my menu"));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class ChaiTest {
 
         Chai chai = new Chai(new Storage(dataFile));
 
-        assertTrue(chai.getWelcomeMessage().contains("OOPS!!! Saved data is invalid on line 1"));
+        assertTrue(chai.getWelcomeMessage().contains("Oops — Saved data is invalid on line 1"));
         assertTrue(chai.getResponse("list").contains("(none)"));
     }
 
@@ -86,7 +86,7 @@ public class ChaiTest {
 
         String addResponse = chai.getResponse("todo borrow book");
 
-        assertTrue(addResponse.startsWith("OOPS!!! I could not save your tasks"));
+        assertTrue(addResponse.startsWith("Oops — I could not save your tasks"));
         assertTrue(chai.getResponse("list").contains("(none)"));
     }
 

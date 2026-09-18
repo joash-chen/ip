@@ -65,7 +65,7 @@ public class Chai {
      * @return Greeting, preceded by any saved-data error encountered at startup.
      */
     public String getWelcomeMessage() {
-        String greeting = "Hey, I'm Chai :)\nWhat do you need?";
+        String greeting = "Welcome to Chai ☕\nLet's brew a calmer day. What needs doing?";
         return startupError.isEmpty() ? greeting : startupError + "\n" + greeting;
     }
 
@@ -83,10 +83,10 @@ public class Chai {
             switch (commandType) {
                 case BYE:
                     Parser.requireNoArguments(normalizedCommand, "bye");
-                    return "See you soon!";
+                    return "All brewed for now. Take care!";
                 case LIST:
                     Parser.requireNoArguments(normalizedCommand, "list");
-                    return formatTaskList(tasks, "Here are the tasks in your list:");
+                    return formatTaskList(tasks, "Here's what's brewing:");
                 case MARK:
                     return setTaskCompletion(normalizedCommand, true);
                 case UNMARK:
@@ -106,7 +106,7 @@ public class Chai {
                 case UNKNOWN:
                 default:
                     throw new ChaiException(
-                            "I don't know how to handle that command. Try: todo <description>");
+                            "That blend isn't on my menu. Try: todo <description>");
             }
         } catch (ChaiException e) {
             return formatError(e.getMessage());
@@ -132,7 +132,7 @@ public class Chai {
         });
 
         String state = isDone ? "done" : "not done";
-        return "Marked task " + (taskIndex + 1) + " as " + state + ":\n  " + task;
+        return "Nice progress — task " + (taskIndex + 1) + " is now " + state + ":\n  " + task;
     }
 
     /** Parses and removes a task in the form {@code delete <task number>}. */
@@ -140,7 +140,7 @@ public class Chai {
         int taskIndex = Parser.parseTaskIndex(command, "delete", tasks.size());
         Task removed = tasks.remove(taskIndex);
         saveOrRollback(() -> tasks.add(taskIndex, removed));
-        return "Noted. I've removed this task:\n  " + removed
+        return "Cleared from the tray. I've removed this task:\n  " + removed
                 + "\nNow you have " + tasks.size() + " tasks in the list.";
     }
 
@@ -151,7 +151,7 @@ public class Chai {
         List<Task> matchingTasks = tasks.stream().
                 filter(task -> task.containsKeyword(keyword)).
                 toList();
-        return formatTaskList(matchingTasks, "Here are the matching tasks in your list:");
+        return formatTaskList(matchingTasks, "I found these matching tasks:");
     }
 
     /** Sorts dated tasks chronologically and places undated tasks afterward. */
@@ -163,14 +163,14 @@ public class Chai {
             tasks.clear();
             tasks.addAll(originalOrder);
         });
-        return formatTaskList(tasks, "Here are your tasks sorted chronologically:");
+        return formatTaskList(tasks, "Freshly arranged, earliest first:");
     }
 
     /** Adds and saves a task, then returns the standard confirmation. */
     private String addTask(Task task) throws ChaiException {
         tasks.add(task);
         saveOrRollback(() -> tasks.remove(tasks.size() - 1));
-        return "Got it. I've added this task:\n  " + task
+        return "Steeped and saved. I've added this task:\n  " + task
                 + "\nNow you have " + tasks.size() + " tasks in the list.";
     }
 
@@ -199,6 +199,6 @@ public class Chai {
 
     /** Adds Chai's standard prefix to an error explanation. */
     private static String formatError(String message) {
-        return "OOPS!!! " + message;
+        return "Oops — " + message;
     }
 }

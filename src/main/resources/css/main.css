@@ -1,8 +1,8 @@
 .root {
-    -chai-cream: #fff8ea;
-    -chai-brown: #5f3b2d;
-    -chai-caramel: #c97941;
-    -chai-green: #52796f;
+    -chai-cream: #fff9ed;
+    -chai-brown: #51352c;
+    -chai-caramel: #c8753f;
+    -chai-green: #527565;
     -fx-background-color: -chai-cream;
     -fx-font-family: "Inter", "Segoe UI", sans-serif;
 }
@@ -44,7 +44,7 @@
 
 .chai-dialog .avatar {
     -fx-background-color: -chai-green;
-    -fx-font-size: 18px;
+    -fx-font-size: 20px;
 }
 
 .input-bar {
