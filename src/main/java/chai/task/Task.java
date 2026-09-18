@@ -1,5 +1,6 @@
 package chai.task;
 
+import java.time.LocalDate;
 import java.util.Locale;
 
 /**
@@ -64,6 +65,16 @@ public abstract class Task {
         String normalizedDescription = description.toLowerCase(Locale.ROOT);
         String normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
         return normalizedDescription.contains(normalizedKeyword);
+    }
+
+    /**
+     * Returns the date used to order this task chronologically.
+     * Tasks without dates sort after all dated tasks.
+     *
+     * @return Relevant task date, or the latest supported date for undated tasks.
+     */
+    public LocalDate getSortDate() {
+        return LocalDate.MAX;
     }
 
     /** Marks this task as completed. */

@@ -1,6 +1,7 @@
 package chai;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import chai.storage.Storage;
@@ -81,6 +82,8 @@ public class Chai {
                     return deleteTask(normalizedCommand);
                 case FIND:
                     return findTasks(normalizedCommand);
+                case SORT:
+                    return sortTasks(normalizedCommand);
                 case UNKNOWN:
                 default:
                     throw new ChaiException(
@@ -123,6 +126,14 @@ public class Chai {
                 filter(task -> task.containsKeyword(keyword)).
                 toList();
         return formatTaskList(matchingTasks, "Here are the matching tasks in your list:");
+    }
+
+    /** Sorts dated tasks chronologically and places undated tasks afterward. */
+    private String sortTasks(String command) throws ChaiException {
+        Parser.requireNoArguments(command, "sort");
+        tasks.sort(Comparator.comparing(Task::getSortDate));
+        Storage.save(tasks);
+        return formatTaskList(tasks, "Here are your tasks sorted chronologically:");
     }
 
     /** Adds and saves a task, then returns the standard confirmation. */

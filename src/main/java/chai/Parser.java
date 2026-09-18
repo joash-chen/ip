@@ -116,4 +116,11 @@ public final class Parser {
         }
         return keyword;
     }
+
+    /** Checks that a command contains only its keyword. */
+    public static void requireNoArguments(String command, String keyword) throws ChaiException {
+        if (!command.equals(keyword)) {
+            throw new ChaiException("Use: " + keyword);
+        }
+    }
 }

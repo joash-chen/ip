@@ -55,4 +55,12 @@ public class ParserTest {
         assertEquals("book", Parser.parseFindKeyword("find book"));
         assertThrows(ChaiException.class, () -> Parser.parseFindKeyword("find"));
     }
+
+    @Test
+    public void requireNoArguments_extraArgument_exceptionThrown() {
+        ChaiException exception = assertThrows(
+                ChaiException.class, () -> Parser.requireNoArguments("sort date", "sort"));
+
+        assertEquals("Use: sort", exception.getMessage());
+    }
 }

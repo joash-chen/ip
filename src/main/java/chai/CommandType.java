@@ -20,6 +20,8 @@ public enum CommandType {
     DELETE,
     /** Finds tasks containing a keyword. */
     FIND,
+    /** Sorts dated tasks chronologically and places todos afterward. */
+    SORT,
     /** Represents a command Chai does not recognize. */
     UNKNOWN;
 
