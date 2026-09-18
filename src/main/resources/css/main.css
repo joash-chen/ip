@@ -1,0 +1,83 @@
+.root {
+    -chai-cream: #fff8ea;
+    -chai-brown: #5f3b2d;
+    -chai-caramel: #c97941;
+    -chai-green: #52796f;
+    -fx-background-color: -chai-cream;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.scroll-pane,
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.dialog-container {
+    -fx-padding: 18 12 18 12;
+}
+
+.dialog-box {
+    -fx-padding: 5 8 5 8;
+}
+
+.dialog-bubble {
+    -fx-background-color: white;
+    -fx-background-radius: 16 16 4 16;
+    -fx-effect: dropshadow(gaussian, rgba(53, 34, 27, 0.12), 10, 0.15, 0, 3);
+    -fx-font-size: 14px;
+    -fx-padding: 11 14 11 14;
+    -fx-text-fill: -chai-brown;
+}
+
+.chai-dialog .dialog-bubble {
+    -fx-background-color: #e3efe8;
+    -fx-background-radius: 16 16 16 4;
+}
+
+.avatar {
+    -fx-background-color: -chai-caramel;
+    -fx-background-radius: 22;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.chai-dialog .avatar {
+    -fx-background-color: -chai-green;
+    -fx-font-size: 18px;
+}
+
+.input-bar {
+    -fx-background-color: rgba(255, 255, 255, 0.94);
+    -fx-border-color: rgba(95, 59, 45, 0.12) transparent transparent transparent;
+    -fx-padding: 14;
+}
+
+.text-field {
+    -fx-background-color: #f5eee3;
+    -fx-background-radius: 18;
+    -fx-font-size: 14px;
+    -fx-padding: 10 14 10 14;
+}
+
+.text-field:focused {
+    -fx-border-color: -chai-caramel;
+    -fx-border-radius: 18;
+}
+
+.button {
+    -fx-background-color: -chai-brown;
+    -fx-background-radius: 18;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+    -fx-padding: 10 18 10 18;
+    -fx-text-fill: white;
+}
+
+.button:hover {
+    -fx-background-color: -chai-caramel;
+}
+
+.button:pressed {
+    -fx-translate-y: 1;
+}

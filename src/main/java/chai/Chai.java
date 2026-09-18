@@ -3,6 +3,7 @@ package chai;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 import chai.storage.Storage;
 import chai.task.Deadline;
@@ -12,175 +13,105 @@ import chai.task.Todo;
 import chai.ui.Ui;
 
 /**
- * Runs the Chai task manager and coordinates user input, task operations,
+ * Runs the Chai task manager and coordinates commands, task operations,
  * and persistent storage.
  */
 public class Chai {
-    /** Prevents instantiation of the command-line entry-point class. */
-    private Chai() {
+    /** Chai's task list for the current session. */
+    private final ArrayList<Task> tasks;
+
+    /** An error encountered while loading saved tasks, or an empty string. */
+    private final String startupError;
+
+    /** Loads Chai's persisted tasks and prepares a new session. */
+    public Chai() {
+        ArrayList<Task> loadedTasks;
+        String loadError = "";
+        try {
+            loadedTasks = Storage.load();
+        } catch (ChaiException e) {
+            loadedTasks = new ArrayList<>();
+            loadError = formatError(e.getMessage());
+        }
+        tasks = loadedTasks;
+        startupError = loadError;
     }
 
     /**
-     * Starts Chai's command loop.
+     * Starts Chai's command-line interface.
      *
      * @param args Command-line arguments, which Chai does not use.
      */
     public static void main(String[] args) {
-        Ui ui = new Ui();
-        ArrayList<Task> tasks;
-        try {
-            tasks = Storage.load();
-        } catch (ChaiException e) {
-            ui.showError(e.getMessage());
-            tasks = new ArrayList<>();
-        }
-
-        ui.showWelcome();
-        boolean isRunning = true;
-        while (isRunning) {
-            String command = ui.readCommand();
-
-            ui.showLine();
-
-            String keyword = command.split("\\s+", 2)[0];
-            CommandType commandType = CommandType.fromKeyword(keyword);
-
-            switch (commandType) {
-                case BYE:
-                    isRunning = false;
-                    break;
-                case LIST:
-                    ui.showTaskList(tasks);
-                    break;
-                case MARK: {
-                    String[] parts = command.split("\\s+");
-                    String output;
-
-                    if (parts.length != 2) {
-                        output = "Please use the format: mark <task number>";
-                    } else {
-                        try {
-                            int taskNumber = Integer.parseInt(parts[1]);
-
-                            if (taskNumber < 1 || taskNumber > tasks.size()) {
-                                output = "That task number does not exist. Please choose a number from 1 to "
-                                        + tasks.size() + ".";
-                            } else {
-                                Task task = tasks.get(taskNumber - 1);
-                                task.markAsDone();
-                                Storage.save(tasks);
-                                output = "Marked task " + taskNumber + " as done:\n  " + task;
-                            }
-                        } catch (NumberFormatException e) {
-                            output = "The task number must be a whole number.";
-                        } catch (ChaiException e) {
-                            output = "OOPS!!! " + e.getMessage();
-                        }
-                    }
-                    ui.showMessage(output);
-                    break;
-                }
-                case UNMARK: {
-                    String[] parts = command.split("\\s+");
-                    String output;
-
-                    if (parts.length != 2) {
-                        output = "Please use the format: unmark <task number>";
-                    } else {
-                        try {
-                            int taskNumber = Integer.parseInt(parts[1]);
-
-                            if (taskNumber < 1 || taskNumber > tasks.size()) {
-                                output = "That task number does not exist. Please choose a number from 1 to "
-                                        + tasks.size() + ".";
-                            } else {
-                                Task task = tasks.get(taskNumber - 1);
-                                task.markAsUndone();
-                                Storage.save(tasks);
-                                output = "Marked task " + taskNumber + " as not done:\n  " + task;
-                            }
-                        } catch (NumberFormatException e) {
-                            output = "The task number must be a whole number.";
-                        } catch (ChaiException e) {
-                            output = "OOPS!!! " + e.getMessage();
-                        }
-                    }
-                    ui.showMessage(output);
-                    break;
-                }
-                case TODO:
-                    try {
-                        String description = command.substring("todo".length()).trim();
-                        if (description.isEmpty()) {
-                            throw new ChaiException("A todo needs a description. Try: todo <description>");
-                        }
-                        addTask(tasks, new Todo(description), ui);
-                    } catch (ChaiException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    break;
-                case DEADLINE:
-                    try {
-                        if (!command.startsWith("deadline ")) {
-                            throw new ChaiException("Use: deadline <description> /by <yyyy-MM-dd>");
-                        }
-                        addDeadline(tasks, command, ui);
-                    } catch (ChaiException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    break;
-                case EVENT:
-                    try {
-                        if (!command.startsWith("event ")) {
-                            throw new ChaiException(
-                                    "Use: event <description> /from <yyyy-MM-dd> /to <yyyy-MM-dd>");
-                        }
-                        addEvent(tasks, command, ui);
-                    } catch (ChaiException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    break;
-                case DELETE:
-                    try {
-                        deleteTask(tasks, command, ui);
-                    } catch (ChaiException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    break;
-                case FIND:
-                    try {
-                        findTasks(tasks, command, ui);
-                    } catch (ChaiException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    break;
-                case UNKNOWN:
-                default:
-                    try {
-                        throw new ChaiException(
-                                "I don't know how to handle that command. Try: todo <description>");
-                    } catch (ChaiException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    break;
-            }
-
-            if (isRunning) {
-                ui.showLine();
-            }
-        }
-        ui.showGoodbye();
+        new Ui().run(new Chai());
     }
 
-    /** Adds a task and prints the standard confirmation message. */
-    private static void addTask(ArrayList<Task> tasks, Task task, Ui ui) throws ChaiException {
-        tasks.add(task);
-        Storage.save(tasks);
-        ui.showTaskAdded(task, tasks.size());
+    /**
+     * Returns the greeting shown when a user starts Chai.
+     *
+     * @return Greeting, preceded by any saved-data error encountered at startup.
+     */
+    public String getWelcomeMessage() {
+        String greeting = "Hey, I'm Chai :)\nWhat do you need?";
+        return startupError.isEmpty() ? greeting : startupError + "\n" + greeting;
+    }
+
+    /**
+     * Processes one command and returns Chai's response.
+     *
+     * @param command User command to process.
+     * @return Response suitable for either the console or graphical interface.
+     */
+    public String getResponse(String command) {
+        String normalizedCommand = command.trim();
+        String keyword = normalizedCommand.split("\\s+", 2)[0];
+        CommandType commandType = CommandType.fromKeyword(keyword);
+
+        try {
+            switch (commandType) {
+                case BYE:
+                    return "See you soon!";
+                case LIST:
+                    return formatTaskList(tasks, "Here are the tasks in your list:");
+                case MARK:
+                    return setTaskCompletion(normalizedCommand, true);
+                case UNMARK:
+                    return setTaskCompletion(normalizedCommand, false);
+                case TODO:
+                    return addTodo(normalizedCommand);
+                case DEADLINE:
+                    return addDeadline(normalizedCommand);
+                case EVENT:
+                    return addEvent(normalizedCommand);
+                case DELETE:
+                    return deleteTask(normalizedCommand);
+                case FIND:
+                    return findTasks(normalizedCommand);
+                case UNKNOWN:
+                default:
+                    throw new ChaiException(
+                            "I don't know how to handle that command. Try: todo <description>");
+            }
+        } catch (ChaiException e) {
+            return formatError(e.getMessage());
+        }
+    }
+
+    /** Adds a todo parsed from its command text. */
+    private String addTodo(String command) throws ChaiException {
+        String description = command.substring("todo".length()).trim();
+        if (description.isEmpty()) {
+            throw new ChaiException("A todo needs a description. Try: todo <description>");
+        }
+        return addTask(new Todo(description));
     }
 
     /** Parses and adds a deadline command in the form {@code deadline <description> /by <yyyy-MM-dd>}. */
-    private static void addDeadline(ArrayList<Task> tasks, String command, Ui ui) throws ChaiException {
+    private String addDeadline(String command) throws ChaiException {
+        if (!command.startsWith("deadline ")) {
+            throw new ChaiException("Use: deadline <description> /by <yyyy-MM-dd>");
+        }
+
         String body = command.substring("deadline ".length());
         int marker = body.indexOf(" /by ");
         if (marker < 0) {
@@ -199,11 +130,15 @@ public class Chai {
         } catch (DateTimeParseException e) {
             throw new ChaiException("The deadline date must use yyyy-MM-dd, for example 2019-12-02.");
         }
-        addTask(tasks, new Deadline(description, by), ui);
+        return addTask(new Deadline(description, by));
     }
 
-    /** Parses an event command containing ISO start and end dates, then adds the event. */
-    private static void addEvent(ArrayList<Task> tasks, String command, Ui ui) throws ChaiException {
+    /** Parses and adds an event command containing ISO start and end dates. */
+    private String addEvent(String command) throws ChaiException {
+        if (!command.startsWith("event ")) {
+            throw new ChaiException("Use: event <description> /from <yyyy-MM-dd> /to <yyyy-MM-dd>");
+        }
+
         String body = command.substring("event ".length());
         int fromMarker = body.indexOf(" /from ");
         int toMarker = body.indexOf(" /to ", fromMarker + 1);
@@ -229,14 +164,63 @@ public class Chai {
         if (to.isBefore(from)) {
             throw new ChaiException("The event end date cannot be before its start date.");
         }
-        addTask(tasks, new Event(description, from, to), ui);
+        return addTask(new Event(description, from, to));
+    }
+
+    /** Marks or unmarks the numbered task. */
+    private String setTaskCompletion(String command, boolean isDone) throws ChaiException {
+        String action = isDone ? "mark" : "unmark";
+        int taskIndex = parseTaskIndex(command, action);
+        Task task = tasks.get(taskIndex);
+        if (isDone) {
+            task.markAsDone();
+        } else {
+            task.markAsUndone();
+        }
+        Storage.save(tasks);
+
+        String state = isDone ? "done" : "not done";
+        return "Marked task " + (taskIndex + 1) + " as " + state + ":\n  " + task;
     }
 
     /** Parses and removes a task in the form {@code delete <task number>}. */
-    private static void deleteTask(ArrayList<Task> tasks, String command, Ui ui) throws ChaiException {
+    private String deleteTask(String command) throws ChaiException {
+        int taskIndex = parseTaskIndex(command, "delete");
+        Task removed = tasks.remove(taskIndex);
+        Storage.save(tasks);
+        return "Noted. I've removed this task:\n  " + removed
+                + "\nNow you have " + tasks.size() + " tasks in the list.";
+    }
+
+    /** Finds tasks whose descriptions contain the command's keyword. */
+    private String findTasks(String command) throws ChaiException {
+        String keyword = command.substring("find".length()).trim();
+        if (keyword.isEmpty()) {
+            throw new ChaiException("Please use the format: find <keyword>");
+        }
+
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.containsKeyword(keyword)) {
+                matchingTasks.add(task);
+            }
+        }
+        return formatTaskList(matchingTasks, "Here are the matching tasks in your list:");
+    }
+
+    /** Adds and saves a task, then returns the standard confirmation. */
+    private String addTask(Task task) throws ChaiException {
+        tasks.add(task);
+        Storage.save(tasks);
+        return "Got it. I've added this task:\n  " + task
+                + "\nNow you have " + tasks.size() + " tasks in the list.";
+    }
+
+    /** Parses a one-based task number and converts it to a valid list index. */
+    private int parseTaskIndex(String command, String action) throws ChaiException {
         String[] parts = command.split("\\s+");
         if (parts.length != 2) {
-            throw new ChaiException("Please use the format: delete <task number>");
+            throw new ChaiException("Please use the format: " + action + " <task number>");
         }
 
         int taskNumber;
@@ -250,25 +234,24 @@ public class Chai {
             throw new ChaiException("That task number does not exist. Please choose a number from 1 to "
                     + tasks.size() + ".");
         }
-
-        Task removed = tasks.remove(taskNumber - 1);
-        Storage.save(tasks);
-        ui.showTaskDeleted(removed, tasks.size());
+        return taskNumber - 1;
     }
 
-    /** Finds and displays tasks whose descriptions contain the command's keyword. */
-    private static void findTasks(ArrayList<Task> tasks, String command, Ui ui) throws ChaiException {
-        String keyword = command.substring("find".length()).trim();
-        if (keyword.isEmpty()) {
-            throw new ChaiException("Please use the format: find <keyword>");
+    /** Formats a numbered task list with the given heading. */
+    private String formatTaskList(List<Task> taskList, String heading) {
+        if (taskList.isEmpty()) {
+            return heading + "\n  (none)";
         }
 
-        ArrayList<Task> matchingTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.containsKeyword(keyword)) {
-                matchingTasks.add(task);
-            }
+        StringBuilder output = new StringBuilder(heading);
+        for (int index = 0; index < taskList.size(); index++) {
+            output.append("\n").append(index + 1).append(". ").append(taskList.get(index));
         }
-        ui.showMatchingTasks(matchingTasks);
+        return output.toString();
+    }
+
+    /** Adds Chai's standard prefix to an error explanation. */
+    private static String formatError(String message) {
+        return "OOPS!!! " + message;
     }
 }
