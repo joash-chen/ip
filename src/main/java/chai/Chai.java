@@ -1,3 +1,12 @@
+package chai;
+
+import chai.storage.Storage;
+import chai.task.Deadline;
+import chai.task.Event;
+import chai.task.Task;
+import chai.task.Todo;
+import chai.ui.Ui;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;

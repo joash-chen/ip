@@ -1,3 +1,7 @@
+package chai.ui;
+
+import chai.task.Task;
+
 import java.util.List;
 import java.util.Scanner;
 

@@ -1,3 +1,5 @@
+package chai;
+
 /** The kinds of commands Chai understands. */
 public enum CommandType {
     BYE,

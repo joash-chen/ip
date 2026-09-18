@@ -1,3 +1,5 @@
+package chai.task;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -15,6 +17,11 @@ public class Deadline extends Task {
     public Deadline(String description, LocalDate by) {
         super(description);
         this.by = by;
+    }
+
+    /** Returns the deadline date. */
+    public LocalDate getBy() {
+        return by;
     }
 
     @Override

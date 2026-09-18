@@ -1,3 +1,5 @@
+package chai.task;
+
 /**
  * A task that can be tracked in the task list.
  *
@@ -19,6 +21,16 @@ public abstract class Task {
     /** Returns the completion marker used when displaying this task. */
     public String getStatusIcon() {
         return "[" + (this.isDone ? "X" : " ") + "]";
+    }
+
+    /** Returns the text describing this task. */
+    public String getDescription() {
+        return description;
+    }
+
+    /** Returns whether this task has been completed. */
+    public boolean isDone() {
+        return isDone;
     }
 
     /** Marks this task as completed. */

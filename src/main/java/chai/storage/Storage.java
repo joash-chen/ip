@@ -1,3 +1,11 @@
+package chai.storage;
+
+import chai.ChaiException;
+import chai.task.Deadline;
+import chai.task.Event;
+import chai.task.Task;
+import chai.task.Todo;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,15 +64,16 @@ public class Storage {
 
     /** Converts one task into a single line in the data file. */
     private static String toFileLine(Task task) {
-        String done = task.isDone ? "1" : "0";
+        String done = task.isDone() ? "1" : "0";
         if (task instanceof Todo) {
-            return "T | " + done + " | " + task.description;
+            return "T | " + done + " | " + task.getDescription();
         }
         if (task instanceof Deadline deadline) {
-            return "D | " + done + " | " + deadline.description + " | " + deadline.by;
+            return "D | " + done + " | " + deadline.getDescription() + " | " + deadline.getBy();
         }
         Event event = (Event) task;
-        return "E | " + done + " | " + event.description + " | " + event.from + " | " + event.to;
+        return "E | " + done + " | " + event.getDescription() + " | " + event.getFrom()
+                + " | " + event.getTo();
     }
 
     /** Recreates one task from a line previously written by {@link #toFileLine(Task)}. */

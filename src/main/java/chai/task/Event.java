@@ -1,3 +1,5 @@
+package chai.task;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -19,6 +21,16 @@ public class Event extends Task {
         super(description);
         this.from = from;
         this.to = to;
+    }
+
+    /** Returns the event's start date. */
+    public LocalDate getFrom() {
+        return from;
+    }
+
+    /** Returns the event's end date. */
+    public LocalDate getTo() {
+        return to;
     }
 
     @Override
