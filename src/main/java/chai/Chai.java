@@ -11,7 +11,20 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
+/**
+ * Runs the Chai task manager and coordinates user input, task operations,
+ * and persistent storage.
+ */
 public class Chai {
+    /** Prevents instantiation of the command-line entry-point class. */
+    private Chai() {
+    }
+
+    /**
+     * Starts Chai's command loop.
+     *
+     * @param args Command-line arguments, which Chai does not use.
+     */
     public static void main(String[] args) {
         Ui ui = new Ui();
         ArrayList<Task> tasks;

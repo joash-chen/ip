@@ -12,23 +12,39 @@ public abstract class Task {
     /** Whether this task has been completed. */
     protected boolean isDone;
 
-    /** Creates an incomplete task with the given description. */
+    /**
+     * Creates an incomplete task with the given description.
+     *
+     * @param description Text describing the task.
+     */
     public Task(String description) {
         this.description = description;
         this.isDone = false;
     }
 
-    /** Returns the completion marker used when displaying this task. */
+    /**
+     * Returns the completion marker used when displaying this task.
+     *
+     * @return {@code [X]} when completed, or {@code [ ]} otherwise.
+     */
     public String getStatusIcon() {
         return "[" + (this.isDone ? "X" : " ") + "]";
     }
 
-    /** Returns the text describing this task. */
+    /**
+     * Returns the text describing this task.
+     *
+     * @return Task description.
+     */
     public String getDescription() {
         return description;
     }
 
-    /** Returns whether this task has been completed. */
+    /**
+     * Returns whether this task has been completed.
+     *
+     * @return {@code true} if this task is completed.
+     */
     public boolean isDone() {
         return isDone;
     }

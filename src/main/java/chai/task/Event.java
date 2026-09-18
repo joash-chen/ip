@@ -16,19 +16,33 @@ public class Event extends Task {
     /** The date on which this event ends. */
     protected LocalDate to;
 
-    /** Creates an incomplete event. */
+    /**
+     * Creates an incomplete event.
+     *
+     * @param description Text describing the event.
+     * @param from Date on which the event starts.
+     * @param to Date on which the event ends.
+     */
     public Event(String description, LocalDate from, LocalDate to) {
         super(description);
         this.from = from;
         this.to = to;
     }
 
-    /** Returns the event's start date. */
+    /**
+     * Returns the event's start date.
+     *
+     * @return Event start date.
+     */
     public LocalDate getFrom() {
         return from;
     }
 
-    /** Returns the event's end date. */
+    /**
+     * Returns the event's end date.
+     *
+     * @return Event end date.
+     */
     public LocalDate getTo() {
         return to;
     }
